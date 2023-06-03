@@ -1,8 +1,6 @@
 package com.example.demo.controller;
 
-
 import com.example.demo.entity.Book;
-import com.example.demo.entity.Category;
 import com.example.demo.services.BookService;
 import com.example.demo.services.CategoryService;
 import jakarta.validation.Valid;
@@ -13,7 +11,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/books")
@@ -28,16 +25,17 @@ public class BookController {
         model.addAttribute("books", books);
         return "book/list";
     }
+
     @GetMapping("/add")
-    public  String addBookForm(Model model){
-        model.addAttribute("book",new Book());
-        model.addAttribute("categories",categoryService.getAllCategories());
+    public String addBookForm(Model model){
+        model.addAttribute("book", new Book());
+        model.addAttribute("categories", categoryService.getAllCategories());
         return "book/add";
     }
     @PostMapping("/add")
     public String addBook(@Valid @ModelAttribute("book") Book book, BindingResult bindingResult, Model model){
         if (bindingResult.hasErrors()){
-            model.addAttribute("categories",categoryService.getAllCategories());
+            model.addAttribute("categories", categoryService.getAllCategories());
             return "book/add";
         }
         bookService.addBook(book);
@@ -45,23 +43,28 @@ public class BookController {
     }
     @GetMapping("/edit/{id}")
     public String editBookForm(@PathVariable("id") Long id, Model model) {
-        Book editBook = bookService.getBookById(id);
-        if (editBook != null) {
-            model.addAttribute("book", editBook);
-            model.addAttribute("categories", categoryService.getAllCategories());
-            return "book/edit";
-        } else {
-            return "not-found";
-        }
+        // Get the book by ID
+        Book book = bookService.getBookById(id);
+
+        // Add the book and categories to the model
+        model.addAttribute("book", book);
+        model.addAttribute("categories", categoryService.getAllCategories());
+
+        return "book/edit";
     }
 
-    @PostMapping("/edit")
-    public String editBook( @ModelAttribute("book") Book updatedBook) {
-        bookService.updateBook(updatedBook);
+    // POST request to handle the form submission
+    @PostMapping("/edit/{id}")
+    public String editBook(@ModelAttribute("book") Book book) {
+        Long id = book.getId();
+
+        // Cập nhật thông tin sách
+        bookService.updateBook(book);
+
         return "redirect:/books";
     }
     @GetMapping("/delete/{id}")
-    public String deleteBook(@PathVariable("id") Long id) {
+    public String deleteBook(@PathVariable("id") Long id){
         bookService.deleteBook(id);
         return "redirect:/books";
     }

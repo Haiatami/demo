@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.Book;
 import com.example.demo.entity.Category;
 import com.example.demo.services.CategoryService;
 import jakarta.validation.Valid;
@@ -14,48 +13,48 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/categories")
-public class CategoryControllser {
+public class CategoryController {
     @Autowired
     private CategoryService categoryService;
     @GetMapping
     public String showAllCategories(Model model){
-        List<Category> categories = categoryService.getAllCategories();
+        List<Category>categories = categoryService.getAllCategories();
         model.addAttribute("categories", categories);
         return "category/list";
     }
     @GetMapping("/add")
-    public  String addCategoryForm(Model model){
-        model.addAttribute("category",new Category());
+    public String showAddCategoryForm(Model model) {
+        model.addAttribute("category", new Category());
         return "category/add";
     }
+
     @PostMapping("/add")
-    public String addBook(@Valid @ModelAttribute("category") Category category, BindingResult bindingResult, Model model){
-        if (bindingResult.hasErrors()){
-            return "category/add";
-        }
+    public String addCategory(@ModelAttribute("category") Category category) {
         categoryService.addCategory(category);
         return "redirect:/categories";
     }
-
     @GetMapping("/edit/{id}")
-    public String editCategoryForm(@PathVariable("id") Long id, Model model) {
-        Category editCategory = categoryService.getCategoryById(id);
-        if (editCategory != null) {
-            model.addAttribute("book", editCategory);
-
-            return "category/edit";
-        } else {
-            return "not-found";
-        }
+    public String showEditForm(@PathVariable("id") Long id, Model model) {
+        Category category = categoryService.getCategoryById(id);
+        model.addAttribute("category", category);
+        return "category/edit";
     }
 
-    @PostMapping("/edit")
-    public String editCategory( @ModelAttribute("category") Category updatedCategory) {
-        categoryService.updateCategory(updatedCategory);
+    @PostMapping("/edit/{id}")
+    public String editCategory(@PathVariable("id") Long id, @Valid @ModelAttribute("category") Category updatedCategory,
+                               BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("category", updatedCategory);
+            return "category/edit";
+        }
+
+        Category category = categoryService.getCategoryById(id);
+        category.setName(updatedCategory.getName());
+        categoryService.saveCategory(category);
         return "redirect:/categories";
     }
     @GetMapping("/delete/{id}")
-    public String deleteCategory(@PathVariable("id") Long id) {
+    public String deleteCategory(@PathVariable("id") Long id){
         categoryService.deleteCategory(id);
         return "redirect:/categories";
     }
